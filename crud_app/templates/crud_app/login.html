@@ -1,0 +1,69 @@
+{# Herda a estrutura base do site a partir do arquivo base.html #}
+{% extends "crud_app/base.html" %}
+{# Carrega as tags de arquivos estáticos para usar CSS, JS e imagens #}
+{% load static %}
+
+{# Define o título que aparecerá na aba do navegador para esta página #}
+{% block title %}Login - TurMaps{% endblock %}
+
+{# Adiciona uma classe CSS específica ao cabeçalho (navbar) apenas nesta página #}
+{% block navbar_class %}navbar-login{% endblock %}
+
+{# Início do bloco de conteúdo principal que será inserido no template base #}
+{% block content %}
+    <main class="main-content login-content">
+        <div class="login-container">
+            <h2>Acesso à Conta</h2>
+            <p>Entre com seu e-mail e senha para continuar.</p>
+            
+            {# Bloco para exibir mensagens de erro enviadas pela view (ex: credenciais inválidas) #}
+            {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+
+            {# Formulário de login que envia os dados via método POST para a URL 'login' #}
+            <form id="login-form" method="POST" action="{% url 'login' %}">
+                {# Token de segurança CSRF, obrigatório em formulários POST do Django #}
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" required placeholder="seu.email@exemplo.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" required placeholder="••••••••">
+                </div>
+                
+                {# Botão para submeter o formulário #}
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> Entrar
+                </button>
+            </form>
+            
+            {# Link para uma futura página de recuperação de senha #}
+            <a href="#" class="forgot-password">Esqueceu sua senha?</a>
+            
+            {# Link para a página de cadastro, para usuários que ainda não têm uma conta #}
+            <div class="register-link">
+                Não tem uma conta? <a href="{% url 'cadastro' %}">Cadastre-se aqui</a>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{# Adiciona uma classe CSS específica ao rodapé apenas nesta página #}
+{% block footer_class %}login-footer{% endblock %}
+
+{# Bloco para adicionar JavaScript customizado no final da página #}
+{% block extra_js %}
+    <script>
+        // Adiciona um 'escutador' de eventos que espera o DOM (a estrutura da página) ser completamente carregado.
+        document.addEventListener('DOMContentLoaded', function() {
+            // Chama uma função global chamada 'setupCadastroForm', provavelmente definida em um arquivo .js externo.
+            // NOTA: O nome da função ('setupCadastroForm') sugere que ela pode ser de outra página.
+            // Se não houver funcionalidades JS específicas para a página de login, este bloco pode ser removido.
+            setupCadastroForm(); 
+        });
+    </script>
+{% endblock %}

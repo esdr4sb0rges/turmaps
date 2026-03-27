@@ -1,0 +1,183 @@
+{% extends "crud_app/base.html" %}
+{% load static %}
+
+{% block title %}Mapa Interativo - TurMaps{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    
+    <style>
+        /* RESET DE LAYOUT PARA GARANTIR VISIBILIDADE */
+        .map-main-container {
+            display: flex !important;
+            flex-direction: row;
+            width: 100%;
+            height: 700px;
+            margin: 20px 0;
+            background: #fff;
+            border: 2px solid var(--marrom);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .map-sidebar {
+            width: 350px !important;
+            flex-shrink: 0;
+            background: var(--amarelo);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 2px solid var(--marrom);
+        }
+
+        .map-container {
+            flex-grow: 1;
+            position: relative;
+            background: #e5e3df;
+        }
+
+        /* ID DO MAPA - FORÇANDO ALTURA */
+        #map_container_js {
+            width: 100% !important;
+            height: 100% !important;
+            min-height: 600px;
+        }
+
+        .filter-btn { margin-bottom: 5px; width: 100%; justify-content: flex-start; }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="page-header map-header">
+        <div class="container">
+            <h1>Mapa Interativo</h1>
+            <p>Explore as atrações de Parauapebas e região.</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="map-main-container">
+            <aside class="map-sidebar">
+                <h3 class="sidebar-title"><i class="fas fa-filter"></i> Filtros</h3>
+                <div class="filter-group">
+                    <label>Cidade</label>
+                    <select id="city-filter" class="filter-select" style="width: 100%; margin-bottom: 15px;">
+                        <option value="all">Todas as cidades</option>
+                        {% for cidade in cidades %}
+                            <option value="{{ cidade.nome|slugify }}">{{ cidade.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">Todas Categorias</button>
+                    {% for categoria in categorias %}
+                        <button class="filter-btn" data-filter="{{ categoria.nome|slugify }}">
+                            <i class="{{ categoria.icone }}"></i> {{ categoria.nome }}
+                        </button>
+                    {% endfor %}
+                </div>
+            </aside>
+
+            <div class="map-container">
+                <div id="map_container_js"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    
+    <script id="attractions-data" type="application/json">
+    [
+    {% for atracao in atracoes %}
+        {
+            "nome": "{{ atracao.nome|escapejs }}",
+            "lat": {{ atracao.latitude|stringformat:".6f"|default:0 }},
+            "lng": {{ atracao.longitude|stringformat:".6f"|default:0 }},
+            "categoria": "{{ atracao.categoria.nome|escapejs }}",
+            "categoria_slug": "{{ atracao.categoria.nome|slugify }}",
+            "cidade_slug": "{{ atracao.cidade.nome|slugify }}",
+            "img": "{% if atracao.imagem %}{{ atracao.imagem.url }}{% else %}{% static 'crud_app/placeholder.jpg' %}{% endif %}"
+        }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+    ]
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. Inicializa o mapa
+            var map = L.map('map_container_js').setView([-6.0674, -50.1641], 10);
+
+            // 2. Camada de tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            // 3. Pega os dados
+            var jsonData = document.getElementById('attractions-data').textContent;
+            var attractions = JSON.parse(jsonData);
+
+            // 4. Agrupamento (Cluster)
+            var markersGroup = L.markerClusterGroup();
+
+            function renderMarkers(data) {
+                markersGroup.clearLayers(); 
+                
+                data.forEach(function(item) {
+                    if (item.lat !== 0 && item.lng !== 0) {
+                        var marker = L.marker([item.lat, item.lng])
+                            .bindPopup(`
+                                <div style="text-align:center; min-width: 150px;">
+                                    <h4 style="margin: 0 0 5px 0; color: var(--marrom);">${item.nome}</h4>
+                                    <span style="background: var(--amarelo); color: var(--marrom); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold;">${item.categoria}</span>
+                                    <br>
+                                    <img src="${item.img}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px;">
+                                </div>
+                            `);
+                        markersGroup.addLayer(marker);
+                    }
+                });
+                
+                map.addLayer(markersGroup);
+            }
+
+            renderMarkers(attractions);
+
+            // 5. ESSENCIAL: Corrige bug de renderização
+            setTimeout(function() {
+                map.invalidateSize();
+            }, 500);
+
+            // 6. Lógica de Filtros
+            var cityFilter = document.getElementById('city-filter');
+            var categoryBtns = document.querySelectorAll('.filter-btn');
+
+            function applyFilters() {
+                var selectedCity = cityFilter.value;
+                var selectedCategory = document.querySelector('.filter-btn.active').getAttribute('data-filter');
+
+                var filteredData = attractions.filter(function(item) {
+                    var matchCity = (selectedCity === 'all' || item.cidade_slug === selectedCity);
+                    var matchCategory = (selectedCategory === 'all' || item.categoria_slug === selectedCategory);
+                    return matchCity && matchCategory;
+                });
+
+                renderMarkers(filteredData);
+            }
+
+            cityFilter.addEventListener('change', applyFilters);
+
+            categoryBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    categoryBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    applyFilters();
+                });
+            });
+        });
+    </script>
+{% endblock %}

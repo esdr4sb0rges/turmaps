@@ -1,0 +1,150 @@
+{# Herda a estrutura base do site a partir do arquivo base.html #}
+{% extends "crud_app/base.html" %}
+{# Carrega as tags de arquivos estáticos para usar CSS, JS e imagens #}
+{% load static %}
+
+{# Define o título que aparecerá na aba do navegador para esta página #}
+{% block title %}Contato - TurMaps{% endblock %}
+
+{# Início do bloco de conteúdo principal que será inserido no template base #}
+{% block content %}
+    {# Cabeçalho padrão da página com título e subtítulo #}
+    <div class="page-header">
+        <div class="container">
+            <h1>Entre em Contato</h1>
+            <p>Estamos aqui para ouvir você. Envie suas dúvidas, sugestões ou comentários.</p>
+        </div>
+    </div>
+
+    {# Conteúdo principal da página, organizado em um container #}
+    <main class="main-content">
+        <div class="container">
+            {# Wrapper que divide a página em duas colunas: formulário e informações de contato #}
+            <div class="contact-wrapper">
+                
+                {# Seção da coluna esquerda, contendo o formulário de contato #}
+                <div class="contact-form-section">
+                    <h2 class="section-title contact-title">Envie uma Mensagem</h2>
+                    
+                    {# Div para exibir uma mensagem de sucesso após o envio do formulário (controlado por JS) #}
+                    <div class="success-message" id="successMessage">
+                        <i class="fas fa-check-circle"></i>
+                        <p>Mensagem enviada com sucesso! Entraremos em contato em breve.</p>
+                    </div>
+
+                    {# Formulário de contato que envia os dados via método POST para a URL 'contato' #}
+                    <form class="contact-form" id="contactForm" method="POST" action="{% url 'contato' %}">
+                        {# Token de segurança CSRF, obrigatório em formulários POST do Django para prevenir ataques #}
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="nome">Nome Completo <span class="required">*</span></label>
+                            <input type="text" id="nome" name="nome" required placeholder="Digite seu nome completo">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">E-mail <span class="required">*</span></label>
+                            <input type="email" id="email" name="email" required placeholder="seuemail@exemplo.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="assunto">Assunto <span class="required">*</span></label>
+                            <input type="text" id="assunto" name="assunto" required placeholder="Qual o assunto da sua mensagem?">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mensagem">Mensagem <span class="required">*</span></label>
+                            <textarea id="mensagem" name="mensagem" required placeholder="Escreva sua mensagem aqui..."></textarea>
+                        </div>
+
+                        {# Botão para submeter o formulário #}
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-paper-plane"></i>
+                            Enviar Mensagem
+                        </button>
+                    </form>
+                </div>
+
+                {# Seção da coluna direita, contendo as informações de contato estáticas #}
+                <div class="contact-info-section">
+                    <h2 class="section-title contact-title">Informações de Contato</h2>
+                    
+                    {# Lista com os diferentes tipos de informação de contato #}
+                    <div class="contact-info-list">
+                        <div class="contact-info-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h3>Endereço</h3>
+                                <p>
+                                    Prefeitura de Parauapebas<br>
+                                    Rua Fictícia, nº 100<br>
+                                    Parauapebas - PA<br>
+                                    CEP: 68515-000
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="contact-info-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone-alt"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h3>Telefone</h3>
+                                <p>
+                                    <a href="tel:+559432331234">(94) 3233-1234</a><br>
+                                    <a href="tel:+559432331235">(94) 3233-1235</a><br>
+                                    Horário: Segunda a Sexta, 8h às 17h
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="contact-info-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h3>E-mail</h3>
+                                <p>
+                                    <a href="mailto:contato@turmapsparauapebas.gov.br">contato@turmapsparauapebas.gov.br</a><br>
+                                    <a href="mailto:turismo@parauapebas.pa.gov.br">turismo@parauapebas.pa.gov.br</a>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="contact-info-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h3>Horário de Atendimento</h3>
+                                <p>
+                                    Segunda a Quinta: 8h às 17h<br>
+                                    Sexta-feira: 8h às 16h<br>
+                                    Sábado, Domingo e Feriados: Fechado
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{# Bloco opcional para adicionar uma classe CSS específica ao rodapé desta página #}
+{% block footer_class %}contact-footer{% endblock %}
+
+{# Bloco para adicionar JavaScript customizado no final da página #}
+{% block extra_js %}
+    <script>
+        // Adiciona um 'escutador' de eventos que espera o DOM (a estrutura da página) ser completamente carregado.
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verifica se uma função chamada 'setupContatoForm' existe (provavelmente definida em script.js).
+            // Esta função seria responsável por adicionar interatividade ao formulário, como validação ou envio via AJAX.
+            if (typeof setupContatoForm === 'function') {
+                setupContatoForm(); 
+            }
+        });
+    </script>
+{% endblock %}

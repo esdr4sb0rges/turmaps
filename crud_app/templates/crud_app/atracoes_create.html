@@ -1,0 +1,243 @@
+{# Herda a estrutura base do site a partir do arquivo base.html #}
+{% extends "crud_app/base.html" %}
+{# Carrega as tags de arquivos estáticos para usar CSS, JS e imagens #}
+{% load static %}
+
+{# Define o título que aparecerá na aba do navegador para esta página #}
+{% block title %}Cadastrar Nova Atração - TurMaps{% endblock %}
+
+{# Bloco para adicionar CSS customizado específico para esta página de formulário #}
+{% block extra_css %}
+    <style>
+        /* Estilos específicos para o layout desta página */
+        .atracao-form-container { max-width: 700px; margin: 50px auto; padding: 40px; }
+        .form-row { display: flex; gap: 20px; }
+        .form-row .form-group { flex: 1; }
+        .form-group.full-width { width: 100%; }
+        .form-group select { width: 100%; padding: 12px; border: 2px solid var(--cinza-claro); border-radius: 8px; }
+        .form-group textarea { min-height: 150px; }
+        .submit-btn { margin-top: 20px; }
+        
+        /* Estilos básicos para o toggle (pode ser movido para style.css) */
+        .toggle-group { display: flex; align-items: center; gap: 10px; user-select: none; }
+        .toggle-switch { position: relative; appearance: none; width: 38px; height: 20px; border-radius: 15px; background-color: var(--cinza-medio); transition: background-color 0.3s; cursor: pointer; margin: 0; outline: none; }
+        .toggle-switch:checked { background-color: var(--verde); }
+        .toggle-switch::before { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background-color: var(--branco); transition: transform 0.3s; }
+        .toggle-switch:checked::before { transform: translateX(18px); }
+        .toggle-label { color: var(--marrom); font-size: 0.9em; cursor: pointer; }
+        .form-text.text-muted { font-size: 0.85em; color: var(--cinza-medio); margin-top: 5px; display: block; }
+    </style>
+{% endblock %}
+
+{# Início do bloco de conteúdo principal que será inserido no template base #}
+{% block content %}
+    <main class="main-content">
+        {# Container principal para o formulário de cadastro #}
+        <div class="container atracao-form-container cadastro-container">
+            {# Cabeçalho da seção de cadastro com ícone, título e subtítulo #}
+            <div class="cadastro-header">
+                <i class="fas fa-map-marker-alt"></i>
+                <h1>Cadastrar Nova Atração</h1>
+                <p>Preencha os detalhes e crie a Cidade/Categoria se necessário.</p>
+            </div>
+
+            {# Corpo do container, onde o formulário e as mensagens de erro são exibidos #}
+            <div class="cadastro-body">
+                {# Bloco para exibir mensagens de erro enviadas pela view do Django #}
+                {% if error %}
+                    <div class="alert alert-danger" style="color: red; margin-bottom: 20px;">
+                        <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                    </div>
+                {% endif %}
+                
+                {# Formulário de criação que envia os dados via método POST para a URL 'atracoes_create' #}
+                {# 'enctype="multipart/form-data"' é essencial para permitir o upload de arquivos (imagens) #}
+                <form class="cadastro-form" method="POST" enctype="multipart/form-data" action="{% url 'atracoes_create' %}">
+                    {# Token de segurança CSRF, obrigatório em formulários POST do Django #}
+                    {% csrf_token %}
+                    
+                    {# Campo "Nome da Atração" #}
+                    <div class="form-group full-width">
+                        <label for="nome"><i class="fas fa-heading"></i> Nome da Atração *</label>
+                        <input type="text" id="nome" name="nome" required placeholder="Ex: Parque dos Ipês">
+                    </div>
+                    
+                    {# Campo "Descrição" #}
+                    <div class="form-group full-width">
+                        <label for="descricao"><i class="fas fa-pencil-alt"></i> Descrição Detalhada *</label>
+                        <textarea id="descricao" name="descricao" required placeholder="Descreva o que torna esta atração especial..."></textarea>
+                    </div>
+
+                    {# Linha contendo os seletores dinâmicos de Cidade e Categoria #}
+                    <div class="form-row">
+                        {# Grupo do seletor de Cidade #}
+                        <div class="form-group cidade-select-group">
+                            <label><i class="fas fa-city"></i> Cidade *</label>
+                            
+                            {# Interruptor (toggle) para alternar entre selecionar uma cidade existente e criar uma nova #}
+                            <div class="toggle-group" style="margin-bottom: 10px;">
+                                <input type="checkbox" id="toggleNovaCidade" class="toggle-switch">
+                                <label for="toggleNovaCidade" class="toggle-label">Criar Nova Cidade</label>
+                            </div>
+
+                            {# Div para selecionar uma cidade existente (visível por padrão) #}
+                            <div id="cidadeExistente">
+                                <select id="cidade" name="cidade_id_existente" required>
+                                    <option value="" disabled selected>Selecione a Cidade</option>
+                                    {# Loop para popular o seletor com as cidades do banco de dados #}
+                                    {% for cidade in cidades %}
+                                        <option value="{{ cidade.pk }}">{{ cidade.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            {# Div para criar uma nova cidade (oculta por padrão) #}
+                            <div id="cidadeNova" style="display: none;">
+                                <input type="text" id="novaCidadeNome" name="nova_cidade_nome" placeholder="Nome da Nova Cidade" maxlength="100">
+                            </div>
+                        </div>
+                        
+                        {# Grupo do seletor de Categoria #}
+                        <div class="form-group categoria-select-group">
+                            <label><i class="fas fa-tags"></i> Categoria *</label>
+                            
+                            {# Interruptor (toggle) para alternar entre selecionar uma categoria existente e criar uma nova #}
+                            <div class="toggle-group" style="margin-bottom: 10px;">
+                                <input type="checkbox" id="toggleNovaCategoria" class="toggle-switch">
+                                <label for="toggleNovaCategoria" class="toggle-label">Criar Nova Categoria</label>
+                            </div>
+
+                            {# Div para selecionar uma categoria existente (visível por padrão) #}
+                            <div id="categoriaExistente">
+                                <select id="categoria" name="categoria_id_existente" required>
+                                    <option value="" disabled selected>Selecione a Categoria</option>
+                                    {# Loop para popular o seletor com as categorias do banco de dados #}
+                                    {% for categoria in categorias %}
+                                        <option value="{{ categoria.pk }}">{{ categoria.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            {# Div para criar uma nova categoria (oculta por padrão) #}
+                            <div id="categoriaNova" style="display: none;">
+                                <input type="text" id="novaCategoriaNome" name="nova_categoria_nome" placeholder="Nome da Nova Categoria" maxlength="100" style="margin-bottom: 10px;">
+                                <input type="text" id="novaCategoriaIcone" name="nova_categoria_icone" placeholder="Ícone (Ex: fas fa-tree)" maxlength="50">
+                                <small class="form-text text-muted">Use classes do Font Awesome (Ex: `fas fa-tree`).</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {# Linha contendo campos de informação adicionais #}
+                    <div class="form-row">
+                        {# Campo "Horário de Funcionamento" #}
+                        <div class="form-group">
+                            <label for="horario_funcionamento"><i class="fas fa-clock"></i> Horário de Funcionamento</label>
+                            <input type="text" id="horario_funcionamento" name="horario_funcionamento" placeholder="Ex: Seg a Sex, 8h às 18h">
+                        </div>
+                        
+                        {# Campo "Informações de Entrada" #}
+                        <div class="form-group">
+                            <label for="informacoes_entrada"><i class="fas fa-money-bill-wave"></i> Informações de Entrada</label>
+                            <input type="text" id="informacoes_entrada" name="informacoes_entrada" placeholder="Ex: Gratuita, R$ 20,00 por pessoa">
+                        </div>
+                    </div>
+                    
+                    {# Campo para upload da imagem principal #}
+                    <div class="form-group full-width">
+                        <label for="imagem"><i class="fas fa-image"></i> Imagem Principal *</label>
+                        <input type="file" id="imagem" name="imagem" accept="image/*" required>
+                    </div>
+
+                    {# Linha contendo os campos de coordenadas geográficas #}
+                    <div class="form-row">
+                        {# Campo "Latitude" #}
+                        <div class="form-group">
+                            <label for="latitude"><i class="fas fa-map-pin"></i> Latitude</label>
+                            <input type="text" id="latitude" name="latitude" placeholder="Ex: -6.0759">
+                        </div>
+                        
+                        {# Campo "Longitude" #}
+                        <div class="form-group">
+                            <label for="longitude"><i class="fas fa-map-pin"></i> Longitude</label>
+                            <input type="text" id="longitude" name="longitude" placeholder="Ex: -49.9123">
+                        </div>
+                    </div>
+
+                    {# Botão para submeter o formulário e criar a atração #}
+                    <button type="submit" class="submit-btn cadastro-btn">
+                        <i class="fas fa-plus-circle"></i>
+                        Cadastrar Atração
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{# Bloco para adicionar JavaScript customizado no final da página #}
+{% block extra_js %}
+<script>
+    // Adiciona um 'escutador' de eventos que espera o DOM (a estrutura da página) ser completamente carregado.
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Referências de Elementos ---
+        const toggleCidade = document.getElementById('toggleNovaCidade');
+        const selectCidade = document.getElementById('cidade');
+        const divCidadeExistente = document.getElementById('cidadeExistente');
+        const divCidadeNova = document.getElementById('cidadeNova');
+        const inputNovaCidade = document.getElementById('novaCidadeNome');
+
+        const toggleCategoria = document.getElementById('toggleNovaCategoria');
+        const selectCategoria = document.getElementById('categoria');
+        const divCategoriaExistente = document.getElementById('categoriaExistente');
+        const divCategoriaNova = document.getElementById('categoriaNova');
+        const inputNovaCategoriaNome = document.getElementById('novaCategoriaNome');
+        const inputNovaCategoriaIcone = document.getElementById('novaCategoriaIcone');
+        
+        // --- Funções de Toggle ---
+        // Função reutilizável para mostrar/esconder os campos de seleção e criação.
+        function toggleVisibility(isNew, divExistente, divNova, selectField, inputNew1, inputNew2 = null) {
+            // Se o interruptor estiver no modo "Criar Novo"
+            if (isNew) {
+                // Modo Criação
+                divExistente.style.display = 'none';
+                divNova.style.display = 'block';
+                // Remove a obrigatoriedade do campo de seleção e adiciona nos campos de criação.
+                selectField.removeAttribute('required');
+                inputNew1.setAttribute('required', 'required');
+                if (inputNew2) inputNew2.setAttribute('required', 'required');
+                selectField.value = ""; // Limpa a seleção para não enviar dados conflitantes.
+            // Se o interruptor estiver no modo "Selecionar Existente"
+            } else {
+                // Modo Seleção
+                divExistente.style.display = 'block';
+                divNova.style.display = 'none';
+                // Adiciona a obrigatoriedade no campo de seleção e remove dos campos de criação.
+                selectField.setAttribute('required', 'required');
+                inputNew1.removeAttribute('required');
+                inputNew1.value = ''; 
+                if (inputNew2) {
+                    inputNew2.removeAttribute('required');
+                    inputNew2.value = ''; 
+                }
+            }
+        }
+
+        // --- Event Listeners ---
+        // Adiciona um 'escutador' para o evento de mudança no interruptor de Cidade.
+        toggleCidade.addEventListener('change', function() {
+            toggleVisibility(this.checked, divCidadeExistente, divCidadeNova, selectCidade, inputNovaCidade);
+        });
+
+        // Adiciona um 'escutador' para o evento de mudança no interruptor de Categoria.
+        toggleCategoria.addEventListener('change', function() {
+            toggleVisibility(this.checked, divCategoriaExistente, divCategoriaNova, selectCategoria, inputNovaCategoriaNome, inputNovaCategoriaIcone);
+        });
+        
+        // --- Inicialização ---
+        // Dispara o evento 'change' manualmente ao carregar a página.
+        // Isso garante que a lógica de visibilidade e 'required' seja aplicada corretamente no estado inicial do formulário.
+        toggleCidade.dispatchEvent(new Event('change')); 
+        toggleCategoria.dispatchEvent(new Event('change'));
+    });
+</script>
+{% endblock %}

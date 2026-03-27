@@ -1,0 +1,44 @@
+{# Herda a estrutura base do site a partir do arquivo base.html #}
+{% extends "crud_app/base.html" %}
+{# Carrega as tags de arquivos estáticos para usar CSS, JS e imagens #}
+{% load static %}
+
+{# Define o título que aparecerá na aba do navegador para esta página #}
+{% block title %}Admin | Excluir Atração{% endblock %}
+
+{# Início do bloco de conteúdo principal que será inserido no template base #}
+{% block content %}
+    <main class="main-content" style="padding-top: 100px;">
+        {# Container principal para a caixa de confirmação #}
+        <div class="container" style="max-width: 600px; text-align: center;">
+            {# Caixa de diálogo para a confirmação de exclusão #}
+            <div style="background: var(--branco); padding: 40px; border-radius: 10px; box-shadow: var(--sombra);">
+                {# Ícone de alerta para chamar a atenção do usuário #}
+                <i class="fas fa-exclamation-triangle" style="font-size: 3em; color: #dc3545; margin-bottom: 15px;"></i>
+                {# Título da página de confirmação #}
+                <h1 style="color: var(--marrom); margin-bottom: 15px;">Confirmar Exclusão</h1>
+                
+                {# Mensagem de aviso, informando qual item será excluído e que a ação é irreversível #}
+                <p style="font-size: 1.1em; color: var(--cinza-medio); margin-bottom: 30px;">
+                    Você tem certeza que deseja excluir permanentemente a atração: 
+                    <strong>"{{ atracao.nome }}"</strong>?
+                    Esta ação é irreversível e removerá todos os dados e a imagem associada.
+                </p>
+
+                {# Formulário que, quando submetido, envia uma requisição POST para a view de exclusão #}
+                <form method="POST" action="{% url 'atracoes_delete' id=atracao.id %}">
+                    {# Token de segurança CSRF, obrigatório em formulários POST do Django #}
+                    {% csrf_token %}
+                    {# Botão/Link para cancelar a ação e voltar para a lista de atrações #}
+                    <a href="{% url 'atracoes_admin_index' %}" class="submit-btn" style="background: var(--cinza-medio); margin-right: 15px; text-decoration: none;">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                    {# Botão que submete o formulário e confirma a exclusão #}
+                    <button type="submit" class="submit-btn" style="background: #dc3545;">
+                        <i class="fas fa-trash-alt"></i> Excluir Atração
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+{% endblock %}

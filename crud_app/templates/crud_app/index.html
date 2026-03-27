@@ -1,0 +1,119 @@
+{# Herda a estrutura base do site a partir do arquivo base.html #}
+{% extends "crud_app/base.html" %}
+{# Carrega as tags de arquivos estáticos para usar CSS, JS e imagens #}
+{% load static %}
+
+{# Define o título que aparecerá na aba do navegador para esta página específica #}
+{% block title %}Início - TurMaps Parauapebas e Região{% endblock %}
+
+{# Início do bloco de conteúdo principal que será inserido no template base #}
+{% block content %}
+    {# Seção "Hero": a primeira coisa que o usuário vê. Contém o título principal e a barra de busca. #}
+    <section class="hero" id="inicio">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Descubra Parauapebas</h1>
+                <p>Explore as maravilhas naturais e culturais de Parauapebas, Canaã dos Carajás e Curionópolis</p>
+                {# Container para a barra de busca (atualmente sem funcionalidade no backend) #}
+                <div class="search-container">
+                    <div class="search-bar">
+                        <input type="text" placeholder="Busque por atrações, parques, museus...">
+                        <button type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# Seção principal de conteúdo da página inicial, focada em listar as "Melhores Atrações" #}
+    <section class="main-content index-content" id="atracoes">
+        <div class="container">
+            <div class="section-title">
+                <h2>Melhores Atrações</h2>
+                <p>Descubra as principais atrações da região.</p>
+            </div>
+
+            {# Abas para filtrar as atrações por cidade. A lógica de filtro é controlada por JavaScript. #}
+            <div class="city-tabs">
+                <a href="#" class="city-tab active" data-city="todos">Todos</a>
+                {# Loop para criar uma aba para cada cidade vinda do contexto da view #}
+                {% for cidade in cidades %}
+                    <a href="#" class="city-tab" data-city="{{ cidade.nome|slugify }}">{{ cidade.nome }}</a>
+                {% endfor %}
+            </div>
+
+            {# Grid onde os cards das atrações serão exibidos #}
+            <div class="attractions-grid" id="attractions-container">
+                {# Verifica se existem atrações para listar #}
+                {% if atracoes %}
+                    {# Loop para criar um card para cada atração vinda do contexto da view #}
+                    {% for atracao in atracoes %}
+                    <div class="attraction-card animated-card" 
+                         data-city="{{ atracao.cidade.nome|slugify }}"
+                         data-category="{{ atracao.categoria.nome|slugify }}">
+                        
+                        <div class="card-image">
+                            {% if atracao.imagem %}
+                                {# Se a atração tiver uma imagem, exibe-a #}
+                                <img src="{{ atracao.imagem.url }}" alt="{{ atracao.nome }}" loading="lazy">
+                            {% else %}
+                                {# Caso contrário, exibe o ícone da categoria como um placeholder #}
+                                <i class="{{ atracao.categoria.icone|default:'fas fa-star' }}"></i> 
+                            {% endif %}
+                            <span class="card-category">{{ atracao.categoria.nome }}</span>
+                        </div>
+                        
+                        <div class="card-content">
+                            <h3>{{ atracao.nome }}</h3>
+                            <div class="rating">
+                                <span class="stars">★★★★★</span>
+                                <span class="rating-text">({{ atracao.cidade.nome }})</span>
+                            </div>
+                            {# Exibe uma versão truncada da descrição da atração #}
+                            <p class="card-description">{{ atracao.descricao|truncatewords:15 }}</p>
+                            {# Exibe a localização da atração #}
+                            <div class="card-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ atracao.cidade.nome }}, PA</span>
+                            </div>
+                            <div class="card-actions">
+                                <a href="{% url 'atracoes' %}" class="details-btn">
+                                    <span>Ver detalhes</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {# Bloco executado se a lista de 'atracoes' estiver vazia #}
+                {% else %}
+                    <div class="no-attractions">
+                        <p>Nenhuma atração principal cadastrada.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    {% endblock %}
+
+{# Adiciona uma classe CSS específica ao rodapé apenas nesta página #}
+{% block footer_class %}index-footer{% endblock %}
+
+{# Bloco para adicionar JavaScript customizado no final da página #}
+{% block extra_js %}
+    <script>
+        // Adiciona um 'escutador' de eventos que espera o DOM (a estrutura da página) ser completamente carregado.
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verifica se a função 'setupIndexAttractions' existe (provavelmente definida em script.js).
+            // Esta função é responsável por inicializar a lógica de filtro das abas de cidade.
+            if (typeof setupIndexAttractions === 'function') {
+                setupIndexAttractions();
+            } else {
+                 console.warn("setupIndexAttractions não encontrado. Verifique seu script.js.");
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,138 @@
+{# Herda a estrutura base do site a partir do arquivo base.html #}
+{% extends "crud_app/base.html" %}
+{# Carrega as tags de arquivos estáticos para usar CSS, JS e imagens #}
+{% load static %}
+
+{# Define o título que aparecerá na aba do navegador, incluindo o nome da atração que está sendo editada #}
+{% block title %}Admin | Editar Atração: {{ atracao.nome }}{% endblock %}
+
+{# Bloco para adicionar CSS customizado específico para esta página #}
+{% block extra_css %}
+    <style>
+        /* Reutiliza estilos de formulário existentes */
+        .atracao-form-container { max-width: 700px; margin: 50px auto; padding: 40px; }
+        .form-row { display: flex; gap: 20px; }
+        .form-row .form-group { flex: 1; }
+        .form-group.full-width { width: 100%; }
+        .form-group select, .form-group input, .form-group textarea { width: 100%; }
+        .form-group textarea { min-height: 150px; }
+        .submit-btn { margin-top: 20px; }
+        /* Estilos para a pré-visualização da imagem atual */
+        .image-current-preview { margin-top: 10px; }
+        .image-current-preview img { max-width: 150px; height: auto; border-radius: 8px; box-shadow: var(--sombra); }
+    </style>
+{% endblock %}
+
+{# Início do bloco de conteúdo principal que será inserido no template base #}
+{% block content %}
+    <main class="main-content">
+        {# Container principal para o formulário de edição #}
+        <div class="container atracao-form-container cadastro-container">
+            {# Cabeçalho da seção de edição com ícone, título e o ID da atração #}
+            <div class="cadastro-header">
+                <i class="fas fa-edit"></i>
+                <h1>Editar Atração: {{ atracao.nome }}</h1>
+                <p>Atualize as informações da atração ID: {{ atracao.id }}.</p>
+            </div>
+
+            {# Corpo do container, onde o formulário e as mensagens de erro são exibidos #}
+            <div class="cadastro-body">
+                {# Bloco para exibir mensagens de erro enviadas pela view do Django #}
+                {% if error %}
+                    <div class="alert alert-danger" style="color: red; margin-bottom: 20px;">
+                        <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                    </div>
+                {% endif %}
+                
+                {# Formulário de edição que envia os dados via método POST para a URL 'atracoes_edit' #}
+                {# 'enctype="multipart/form-data"' é essencial para permitir o upload de arquivos (imagens) #}
+                <form class="cadastro-form" method="POST" enctype="multipart/form-data" action="{% url 'atracoes_edit' id=atracao.id %}">
+                    {# Token de segurança CSRF, obrigatório em formulários POST do Django #}
+                    {% csrf_token %}
+                    
+                    {# Campo "Nome da Atração", pré-preenchido com o valor atual #}
+                    <div class="form-group full-width">
+                        <label for="nome"><i class="fas fa-heading"></i> Nome da Atração *</label>
+                        <input type="text" id="nome" name="nome" required value="{{ atracao.nome }}" placeholder="Ex: Parque dos Ipês">
+                    </div>
+                    
+                    {# Campo "Descrição", pré-preenchido com o valor atual #}
+                    <div class="form-group full-width">
+                        <label for="descricao"><i class="fas fa-pencil-alt"></i> Descrição Detalhada *</label>
+                        <textarea id="descricao" name="descricao" required placeholder="Descreva o que torna esta atração especial...">{{ atracao.descricao }}</textarea>
+                    </div>
+
+                    {# Linha contendo os seletores de Cidade e Categoria #}
+                    <div class="form-row">
+                        {# Seletor de Cidade #}
+                        <div class="form-group">
+                            <label for="cidade"><i class="fas fa-city"></i> Cidade *</label>
+                            <select id="cidade" name="cidade" required>
+                                {# Loop para listar todas as cidades disponíveis #}
+                                {% for cidade in cidades %}
+                                    {# A opção é marcada como 'selected' se o ID da cidade corresponder à cidade da atração atual #}
+                                    <option value="{{ cidade.pk }}" 
+                                            {% if cidade == atracao.cidade %}selected{% endif %}>
+                                        {{ cidade.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        {# Seletor de Categoria #}
+                        <div class="form-group">
+                            <label for="categoria"><i class="fas fa-tags"></i> Categoria *</label>
+                            <select id="categoria" name="categoria" required>
+                                {# Loop para listar todas as categorias disponíveis #}
+                                {% for categoria in categorias %}
+                                    {# A opção é marcada como 'selected' se o ID da categoria corresponder à categoria da atração atual #}
+                                    <option value="{{ categoria.pk }}" 
+                                            {% if categoria == atracao.categoria %}selected{% endif %}>
+                                        {{ categoria.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    {# Seção para gerenciar a imagem da atração #}
+                    <div class="form-group full-width">
+                        <label><i class="fas fa-image"></i> Imagem Principal</label>
+                        
+                        {# Se a atração já tiver uma imagem, exibe uma pré-visualização dela #}
+                        {% if atracao.imagem %}
+                            <div class="image-current-preview">
+                                <strong>Imagem Atual:</strong>
+                                <img src="{{ atracao.imagem.url }}" alt="Imagem Atual" style="max-height: 80px;">
+                            </div>
+                        {% endif %}
+                        {# Campo para upload de uma nova imagem (opcional) #}
+                        <label for="imagem" style="margin-top: 10px;">Substituir Imagem (Opcional)</label>
+                        <input type="file" id="imagem" name="imagem" accept="image/*">
+                    </div>
+
+                    {# Linha contendo os campos de coordenadas geográficas #}
+                    <div class="form-row">
+                        {# Campo Latitude, pré-preenchido com o valor atual. Usa 'default_if_none' para exibir um campo vazio se o valor for Nulo. #}
+                        <div class="form-group">
+                            <label for="latitude"><i class="fas fa-map-pin"></i> Latitude</label>
+                            <input type="text" id="latitude" name="latitude" value="{{ atracao.latitude|default_if_none:'' }}" placeholder="Ex: -6.0759">
+                        </div>
+                        
+                        {# Campo Longitude, pré-preenchido com o valor atual #}
+                        <div class="form-group">
+                            <label for="longitude"><i class="fas fa-map-pin"></i> Longitude</label>
+                            <input type="text" id="longitude" name="longitude" value="{{ atracao.longitude|default_if_none:'' }}" placeholder="Ex: -49.9123">
+                        </div>
+                    </div>
+
+                    {# Botão para submeter o formulário e salvar as alterações #}
+                    <button type="submit" class="submit-btn cadastro-btn">
+                        <i class="fas fa-save"></i>
+                        Salvar Alterações
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+{% endblock %}

@@ -1,0 +1,37 @@
+# =========================
+# AMBIENTE VIRTUAL E CACHE
+# =========================
+# Risco: Enviar a pasta .venv inteira destrói a portabilidade do projeto.
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+
+# =========================
+# BANCO DE DADOS LOCAL
+# =========================
+# Risco: Versionar o SQLite causa conflitos de merge irreversíveis e pode expor dados reais.
+db.sqlite3
+db.sqlite3-journal
+
+# =========================
+# MÍDIA E ARQUIVOS ESTÁTICOS
+# =========================
+# Risco: Arquivos de upload e pastas geradas pelo collectstatic incham o repositório.
+media/
+staticfiles/
+
+# =========================
+# VARIÁVEIS DE AMBIENTE / SECRETS
+# =========================
+.env
+.env.local
+
+# =========================
+# ARQUIVOS DO SISTEMA OPERACIONAL / VS CODE
+# =========================
+.DS_Store
+.vscode/
+Thumbs.db

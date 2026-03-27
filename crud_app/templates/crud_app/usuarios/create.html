@@ -1,0 +1,87 @@
+{# Herda a estrutura base do site a partir do arquivo base.html #}
+{% extends "crud_app/base.html" %}
+{# Carrega as tags de arquivos estáticos (embora não usado diretamente aqui, é uma boa prática) #}
+{% load static %}
+
+{# Define o título que aparecerá na aba do navegador para esta página #}
+{% block title %}Admin | Criar Novo Usuário{% endblock %}
+
+{# Início do bloco de conteúdo principal que será inserido no template base #}
+{% block content %}
+    <main class="main-content cadastro-content">
+        {# Container principal para o formulário de criação de usuário #}
+        <div class="cadastro-container">
+            {# Cabeçalho da seção de criação com ícone, título e subtítulo #}
+            <div class="cadastro-header">
+                <i class="fas fa-user-plus"></i>
+                <h1>Criar Usuário Admin</h1>
+                <p>Use esta tela para criar rapidamente contas de acesso ao painel.</p>
+            </div>
+
+            {# Corpo do container, onde o formulário e as mensagens de erro são exibidos #}
+            <div class="cadastro-body">
+                {# Bloco para exibir mensagens de erro enviadas pela view do Django (ex: username já existe) #}
+                {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+                
+                {# Formulário de criação que envia os dados via método POST para a URL 'usuarios_create' #}
+                <form class="cadastro-form" method="POST" action="{% url 'usuarios_create' %}">
+                    {# Token de segurança CSRF, obrigatório em formulários POST do Django para proteção #}
+                    {% csrf_token %}
+                    
+                    {# Campo "Username", que será o nome de login e de exibição #}
+                    <div class="form-group">
+                        <label for="nome">
+                            <i class="fas fa-user"></i>
+                            Username / Nome de Exibição <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <i class="input-icon fas fa-user"></i>
+                            <input type="text" id="nome" name="nome" required placeholder="Ex: joao_admin">
+                        </div>
+                    </div>
+                    
+                    {# Campo "E-mail", opcional para este formulário simplificado #}
+                    <div class="form-group">
+                        <label for="email">
+                            <i class="fas fa-envelope"></i>
+                            E-mail (Opcional)
+                        </label>
+                        <div class="input-wrapper">
+                            <i class="input-icon fas fa-envelope"></i>
+                            <input type="email" id="email" name="email" placeholder="email@dominio.com">
+                        </div>
+                    </div>
+
+                    {# Campo "Senha", obrigatório para a criação do usuário #}
+                    <div class="form-group">
+                        <label for="senha">
+                            <i class="fas fa-lock"></i>
+                            Senha <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <i class="input-icon fas fa-lock"></i>
+                            <input type="password" id="senha" name="senha" required placeholder="Digite uma senha">
+                        </div>
+                    </div>
+
+                    {# Botão para submeter o formulário e criar o novo usuário #}
+                    <button type="submit" class="submit-btn cadastro-btn">
+                        <i class="fas fa-save"></i>
+                        Salvar Usuário
+                    </button>
+                </form>
+
+                {# Link para cancelar a criação e retornar à lista de usuários #}
+                <div class="login-link">
+                    <a href="{% url 'usuarios_index' %}">← Voltar para a lista</a>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{# Bloco para JavaScript extra, atualmente vazio, mas disponível para futuras funcionalidades #}
+{% block extra_js %}
+{% endblock %}

@@ -1,0 +1,166 @@
+{# Herda a estrutura base do site a partir do arquivo base.html #}
+{% extends "crud_app/base.html" %}
+{# Carrega as tags de arquivos estáticos para usar CSS, JS e imagens #}
+{% load static %}
+
+{# Define o título que aparecerá na aba do navegador para esta página #}
+{% block title %}Criar Conta - TurMaps{% endblock %}
+
+{# Início do bloco de conteúdo principal que será inserido no template base #}
+{% block content %}
+    <main class="main-content cadastro-content">
+        {# Container principal para o formulário de cadastro #}
+        <div class="cadastro-container">
+            {# Cabeçalho da seção de cadastro com ícone, título e subtítulo #}
+            <div class="cadastro-header">
+                <i class="fas fa-user-plus"></i>
+                <h1>Crie sua Conta</h1>
+                <p>Cadastre-se para acessar recursos exclusivos da plataforma.</p>
+            </div>
+
+            {# Corpo do container de cadastro, onde o formulário e as mensagens de erro são exibidos #}
+            <div class="cadastro-body">
+                {# Bloco para exibir mensagens de erro enviadas pela view do Django (ex: e-mail já existe) #}
+                {% if error %}
+                    <div class="alert alert-danger" style="color: red; margin-bottom: 20px;">
+                        <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                    </div>
+                {% endif %}
+                
+                {# Formulário de cadastro que envia os dados via método POST para a URL 'cadastro' #}
+                <form class="cadastro-form" id="cadastroForm" method="POST" action="{% url 'cadastro' %}">
+                    {# Token de segurança CSRF, obrigatório em formulários POST do Django para proteção #}
+                    {% csrf_token %}
+                    
+                    {# Grupo do campo "Nome Completo" #}
+                    <div class="form-group">
+                        <label for="nomeCompleto">
+                            <i class="fas fa-user"></i>
+                            Nome Completo <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <i class="input-icon fas fa-user"></i>
+                            <input 
+                                type="text" 
+                                id="nomeCompleto" 
+                                name="full_name" 
+                                required 
+                                placeholder="Seu nome completo"
+                                autocomplete="name"
+                            >
+                        </div>
+                        <span class="error-message" id="nomeError"></span>
+                    </div>
+                    
+                    {# Grupo do campo "E-mail" #}
+                    <div class="form-group">
+                        <label for="email">
+                            <i class="fas fa-envelope"></i>
+                            E-mail <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <i class="input-icon fas fa-envelope"></i>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                required 
+                                placeholder="seuemail@exemplo.com"
+                                autocomplete="email"
+                            >
+                        </div>
+                        <span class="error-message" id="emailError"></span>
+                    </div>
+
+                    {# Grupo do campo "Senha" #}
+                    <div class="form-group">
+                        <label for="senha">
+                            <i class="fas fa-lock"></i>
+                            Senha <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <i class="input-icon fas fa-lock"></i>
+                            <input 
+                                type="password" 
+                                id="senha" 
+                                name="password" 
+                                required 
+                                placeholder="Crie uma senha forte"
+                                autocomplete="new-password"
+                            >
+                        </div>
+                        {# Elementos para a barra de força da senha, controlados por JavaScript #}
+                        <div class="password-strength" id="passwordStrength">
+                            <div class="strength-bar">
+                                <div class="strength-bar-fill" id="strengthBarFill"></div>
+                            </div>
+                            <span class="strength-text" id="strengthText"></span>
+                        </div>
+                        <span class="error-message" id="senhaError"></span>
+                    </div>
+
+                    {# Grupo do campo "Confirmar Senha" para validação no lado do cliente #}
+                    <div class="form-group">
+                        <label for="confirmarSenha">
+                            <i class="fas fa-lock"></i>
+                            Confirmar Senha <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <i class="input-icon fas fa-lock"></i>
+                            <input 
+                                type="password" 
+                                id="confirmarSenha" 
+                                name="confirmarSenha" 
+                                required 
+                                placeholder="Confirme sua senha"
+                                autocomplete="new-password"
+                            >
+                        </div>
+                        <span class="error-message" id="confirmarSenhaError"></span>
+                    </div>
+                    
+                    {# Campo CPF oculto. Atualmente com valor fixo, pois o modelo User padrão não o possui. #}
+                    <div class="form-group" style="display:none;">
+                        <input type="hidden" name="cpf" value="000.000.000-00">
+                    </div>
+                    
+                    {# Grupo para o checkbox de aceitação dos Termos de Uso #}
+                    <div class="terms-group">
+                        <input type="checkbox" id="termos" name="termos" required>
+                        <label for="termos">
+                            Li e aceito os <a href="#" target="_blank">Termos de Uso</a>.
+                        </label>
+                    </div>
+
+                    {# Botão para submeter o formulário de cadastro #}
+                    <button type="submit" class="submit-btn cadastro-btn" id="submitBtn">
+                        <i class="fas fa-user-plus"></i>
+                        Cadastrar
+                    </button>
+                </form>
+
+                {# Link para redirecionar usuários que já possuem uma conta para a página de login #}
+                <div class="login-link">
+                    Já possui uma conta? <a href="{% url 'login' %}">Faça login</a>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{# Adiciona uma classe CSS específica ao rodapé apenas nesta página #}
+{% block footer_class %}cadastro-footer{% endblock %}
+
+{# Bloco para adicionar JavaScript customizado no final da página #}
+{% block extra_js %}
+    <script>
+        // Adiciona um 'escutador' de eventos que espera o DOM (a estrutura da página) ser completamente carregado.
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verifica se a função 'setupCadastroForm' existe (provavelmente definida em script.js).
+            // Esta função é responsável por adicionar validações em tempo real ao formulário (força da senha, etc.).
+            if (typeof setupCadastroForm === 'function') {
+                setupCadastroForm(); 
+            }
+        });
+    </script>
+{% endblock %}

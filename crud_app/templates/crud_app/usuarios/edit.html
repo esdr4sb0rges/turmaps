@@ -1,0 +1,99 @@
+{# Herda a estrutura base do site a partir do arquivo base.html #}
+{% extends "crud_app/base.html" %}
+{# Carrega as tags de arquivos estáticos (embora não usado diretamente aqui, é uma boa prática) #}
+{% load static %}
+
+{# Define o título que aparecerá na aba do navegador, incluindo o nome do usuário que está sendo editado #}
+{% block title %}Admin | Editar Usuário: {{ usuario.username }}{% endblock %}
+
+{# Início do bloco de conteúdo principal que será inserido no template base #}
+{% block content %}
+    <main class="main-content cadastro-content">
+        {# Container principal para o formulário de edição de usuário #}
+        <div class="cadastro-container">
+            {# Cabeçalho da seção de edição com ícone, título e o ID/nome do usuário #}
+            <div class="cadastro-header">
+                <i class="fas fa-user-edit"></i>
+                <h1>Editar Usuário (ID: {{ usuario.id }})</h1>
+                <p>Atualize as informações de {{ usuario.username }}.</p>
+            </div>
+
+            {# Corpo do container, onde o formulário e as mensagens de erro são exibidos #}
+            <div class="cadastro-body">
+                {# Bloco para exibir mensagens de erro enviadas pela view do Django #}
+                {% if error %}
+                    <div class="alert alert-danger" style="color: red; margin-bottom: 20px;">
+                        <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                    </div>
+                {% endif %}
+                
+                {# Formulário de edição que envia os dados via método POST para a URL 'usuarios_edit' #}
+                <form class="cadastro-form" method="POST" action="{% url 'usuarios_edit' id=usuario.id %}">
+                    {# Token de segurança CSRF, obrigatório em formulários POST do Django #}
+                    {% csrf_token %}
+                    
+                    {# Campo "Username", pré-preenchido com o valor atual do usuário #}
+                    <div class="form-group">
+                        <label for="username">
+                            <i class="fas fa-user-tag"></i> Username <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" id="username" name="username" required value="{{ usuario.username }}" placeholder="Nome de usuário para login">
+                        </div>
+                    </div>
+                    
+                    {# Campo "E-mail", pré-preenchido com o valor atual #}
+                    <div class="form-group">
+                        <label for="email">
+                            <i class="fas fa-envelope"></i> E-mail <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="email" id="email" name="email" required value="{{ usuario.email }}" placeholder="email@dominio.com">
+                        </div>
+                    </div>
+                    
+                    {# Campo "Primeiro Nome", pré-preenchido com o valor atual. O filtro 'default' evita erros se o valor for Nulo. #}
+                    <div class="form-group">
+                        <label for="first_name">
+                            <i class="fas fa-user"></i> Primeiro Nome
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" id="first_name" name="first_name" value="{{ usuario.first_name|default:'' }}" placeholder="Nome">
+                        </div>
+                    </div>
+                    
+                    {# Campo "Sobrenome", pré-preenchido com o valor atual #}
+                    <div class="form-group">
+                        <label for="last_name">
+                            <i class="fas fa-user"></i> Sobrenome
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" id="last_name" name="last_name" value="{{ usuario.last_name|default:'' }}" placeholder="Sobrenome">
+                        </div>
+                    </div>
+
+                    {# Caixa de seleção para definir se o usuário é um administrador (staff) #}
+                    <div class="terms-group" style="margin-top: 25px;">
+                        {# O atributo 'checked' é adicionado dinamicamente se o usuário já for um administrador #}
+                        <input type="checkbox" id="is_staff" name="is_staff" 
+                               {% if usuario.is_staff %}checked{% endif %}>
+                        <label for="is_staff" style="font-weight: 600;">
+                            Conceder Acesso Admin (Is Staff)
+                        </label>
+                    </div>
+
+                    {# Botão para submeter o formulário e salvar as alterações #}
+                    <button type="submit" class="submit-btn cadastro-btn" style="margin-top: 25px;">
+                        <i class="fas fa-save"></i>
+                        Salvar Alterações
+                    </button>
+                </form>
+
+                {# Link para cancelar a edição e retornar à lista de usuários #}
+                <div class="login-link">
+                    <a href="{% url 'usuarios_index' %}">← Voltar para a lista</a>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

@@ -1,0 +1,90 @@
+{# Herda a estrutura base do site a partir do arquivo base.html #}
+{% extends "crud_app/base.html" %}
+{# Carrega as tags de arquivos estáticos (embora não usado diretamente aqui, é uma boa prática) #}
+{% load static %}
+
+{# Define o título que aparecerá na aba do navegador para esta página #}
+{% block title %}Admin | Gerenciamento de Usuários{% endblock %}
+
+{# Início do bloco de conteúdo principal que será inserido no template base #}
+{% block content %}
+    <main class="main-content">
+        {# Container principal para a área de administração de usuários #}
+        <div class="container admin-container"> 
+            
+            {# Cabeçalho da seção, com título e botão de ação #}
+            <div class="admin-header"> 
+                <h1>Gerenciamento de Usuários</h1>
+                {# Botão para levar à página de criação de um novo usuário. OBS: O ideal seria usar a tag {% url 'usuarios_create' %} #}
+                <a href="/usuarios/criar/" class="add-btn" style="text-decoration: none;"> 
+                    <i class="fas fa-plus-circle"></i> Novo Usuário
+                </a>
+            </div>
+
+            {# Tabela para listar todos os usuários cadastrados #}
+            <table class="user-table"> 
+                {# Cabeçalho da tabela com as colunas #}
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>E-mail</th>
+                        <th>Nome Completo</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                {# Corpo da tabela, onde os dados dos usuários são populados dinamicamente #}
+                <tbody>
+                    {# Loop para iterar sobre cada 'usuario' na lista de usuários passada pela view #}
+                    {% for usuario in usuarios %}
+                        {# Uma verificação para garantir que o objeto de usuário é válido antes de tentar exibir seus dados #}
+                        {% if usuario.id %}
+                        <tr>
+                            <td>{{ usuario.id }}</td>
+                            <td>{{ usuario.username }}</td>
+                            <td>{{ usuario.email }}</td>
+                            {# Exibe o nome completo do usuário, ou "N/A" se não estiver definido #}
+                            <td>{{ usuario.get_full_name|default:"N/A" }}</td>
+                            <td>
+                                {# Bloco condicional para exibir o status do usuário (Admin ou Padrão) com um ícone #}
+                                {% if usuario.is_staff %}
+                                    <i class="fas fa-user-shield" style="color: var(--verde);"></i> Admin
+                                {% else %}
+                                    <i class="fas fa-user"></i> Padrão
+                                {% endif %}
+                            </td>
+                            <td>
+                                {# Link para a página de edição do usuário específico #}
+                                <a href="{% url 'usuarios_edit' id=usuario.id %}" 
+                                   class="action-btn edit-btn" 
+                                   style="margin-right: 5px;">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+
+                                {# Link para a ação de exclusão do usuário específico #}
+                                <a href="{% url 'usuarios_delete' id=usuario.id %}" 
+                                   class="action-btn delete-btn" 
+                                   {# Adiciona uma confirmação via JavaScript antes de prosseguir com a exclusão #}
+                                   onclick="return confirm('Tem certeza que deseja excluir o usuário {{ usuario.username }}?');">
+                                    <i class="fas fa-trash-alt"></i> Excluir
+                                </a>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {# Bloco 'empty' é executado se a lista de 'usuarios' estiver vazia #}
+                    {% empty %}
+                    <tr>
+                        {# Exibe uma única linha informando que não há registros #}
+                        <td colspan="6" style="text-align: center;">Nenhum usuário cadastrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+{% endblock %}
+
+{# Bloco para JavaScript extra, atualmente vazio #}
+{% block extra_js %}
+    {% endblock %}

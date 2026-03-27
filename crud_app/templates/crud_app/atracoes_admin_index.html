@@ -1,0 +1,154 @@
+{# Herda a estrutura base do site a partir do arquivo base.html #}
+{% extends "crud_app/base.html" %}
+{# Carrega as tags de arquivos estáticos para usar CSS, JS e imagens #}
+{% load static %}
+
+{# Define o título que aparecerá na aba do navegador para esta página #}
+{% block title %}Admin | Gerenciar Atrações{% endblock %}
+
+{# Bloco para adicionar CSS customizado específico para esta página de administração #}
+{% block extra_css %}
+    <style>
+        .admin-container { 
+            max-width: 1200px; 
+            margin: 30px auto; 
+            padding: 20px; 
+            background: var(--branco); 
+            border-radius: 10px; 
+            box-shadow: var(--sombra); 
+        }
+        .admin-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 25px; 
+        }
+        .admin-header h1 { 
+            font-size: 2em; 
+            color: var(--marrom); 
+        }
+        .add-btn { 
+            background: var(--verde); 
+            color: var(--branco); 
+            padding: 10px 15px; 
+            border-radius: 8px; 
+            text-decoration: none; 
+            font-weight: 600; 
+            transition: background 0.3s; 
+        }
+        .add-btn:hover { 
+            background: #358a60; 
+        }
+        .atracao-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+            table-layout: fixed; /* Fixa o layout para controle de largura */
+        }
+        .atracao-table th, .atracao-table td { 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--cinza-claro); 
+            word-wrap: break-word; /* Permite quebras de linha em células longas */
+        }
+        .atracao-table th { 
+            background-color: var(--amarelo); 
+            color: var(--marrom); 
+            font-size: 0.9em;
+        }
+        .atracao-table tr:hover { 
+            background-color: #fcfcfc; 
+        }
+        .action-btn { 
+            padding: 5px 10px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            text-decoration: none; 
+            font-size: 0.85em; 
+            margin-right: 5px;
+            font-weight: 500;
+            display: inline-block;
+        }
+        .edit-btn { background: var(--verde); color: var(--branco); }
+        .edit-btn:hover { background: #358a60; }
+        .delete-btn { background: #dc3545; color: var(--branco); }
+        .delete-btn:hover { background: #c82333; }
+        
+        .image-preview { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
+    </style>
+{% endblock %}
+
+{# Início do bloco de conteúdo principal que será inserido no template base #}
+{% block content %}
+    <main class="main-content">
+        {# Container principal para a área de administração #}
+        <div class="container admin-container">
+            {# Cabeçalho da seção de administração, com título e botão de ação #}
+            <div class="admin-header">
+                <h1>Gerenciamento de Atrações</h1>
+                {# Botão que leva para a página de criação de uma nova atração #}
+                <a href="{% url 'atracoes_create' %}" class="add-btn">
+                    <i class="fas fa-plus-circle"></i> Cadastrar Nova Atração
+                </a>
+            </div>
+
+            {# Tabela para listar todas as atrações cadastradas #}
+            <table class="atracao-table">
+                {# Cabeçalho da tabela com as colunas #}
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">ID</th>
+                        <th style="width: 10%;">Imagem</th>
+                        <th style="width: 25%;">Nome</th>
+                        <th style="width: 10%;">Cidade</th>
+                        <th style="width: 10%;">Categoria</th>
+                        <th style="width: 15%;">Horário</th>
+                        <th style="width: 20%;">Ações</th>
+                    </tr>
+                </thead>
+                {# Corpo da tabela, onde os dados das atrações são populados #}
+                <tbody>
+                    {# Loop para iterar sobre cada 'atracao' na lista de atrações passada pela view #}
+                    {% for atracao in atracoes %}
+                    <tr>
+                        <td>{{ atracao.id }}</td>
+                        <td>
+                            {# Se a atração tiver uma imagem, exibe uma miniatura #}
+                            {% if atracao.imagem %}
+                                <img src="{{ atracao.imagem.url }}" alt="{{ atracao.nome }}" class="image-preview">
+                            {% else %}
+                                {# Caso contrário, exibe "N/A" (Não aplicável) #}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>{{ atracao.nome }}</td>
+                        <td>{{ atracao.cidade.nome }}</td>
+                        <td>{{ atracao.categoria.nome }}</td>
+                        <td>{{ atracao.horario_funcionamento|default:"Não informado" }}</td>
+                        <td>
+                            {# Link para a página de edição da atração específica #}
+                            <a href="{% url 'atracoes_edit' id=atracao.id %}" class="action-btn edit-btn">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            {# Link para a ação de exclusão da atração específica #}
+                            <a href="{% url 'atracoes_delete' id=atracao.id %}" 
+                               class="action-btn delete-btn" 
+                               {# Adiciona uma confirmação via JavaScript antes de prosseguir com a exclusão #}
+                               onclick="return confirm('Tem certeza que deseja excluir a atração: {{ atracao.nome }}?');">
+                                <i class="fas fa-trash-alt"></i> Excluir
+                            </a>
+                        </td>
+                    </tr>
+                    {# Bloco 'empty' é executado se a lista de 'atracoes' estiver vazia #}
+                    {% empty %}
+                    <tr>
+                        {# Exibe uma única linha informando que não há registros #}
+                        <td colspan="7" style="text-align: center;">Nenhuma atração cadastrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+{% endblock %}

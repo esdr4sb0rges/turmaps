@@ -1,0 +1,167 @@
+{# Carrega as tags de template para lidar com arquivos estáticos (CSS, JS, imagens) #}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    {# Configurações essenciais do documento #}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {# Bloco de título: pode ser sobrescrito por templates filhos #}
+    <title>{% block title %}TurMaps Parauapebas e Região{% endblock %}</title>
+    
+    {# Importação de fontes externas (Google Fonts) #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    {# Importação da biblioteca de ícones Font Awesome #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    
+    {# Link para a folha de estilo principal do projeto #}
+    <link rel="stylesheet" href="{% static 'crud_app/style.css' %}">
+    
+    {# Bloco para CSS extra #}
+    {% block extra_css %}{% endblock %}
+
+    <style>
+        /* === CABEÇALHO (BYPASS DE CACHE) - AJUSTE DE ESPAÇO E ENCAIXE === */
+        header { background-color: #59291c !important; }
+        
+        /* Adicionei 'gap: 20px' para garantir que o menu nunca encoste na logo */
+        .navbar { display: flex !important; justify-content: space-between !important; width: 100% !important; padding: 0 20px !important; gap: 20px !important; }
+        
+        /* flex-shrink: 0 impede a logo de ser esmagada */
+        .logo-section { display: flex !important; align-items: center !important; gap: 10px !important; flex-shrink: 0 !important; }
+        .logo-placeholder img { height: 95px !important; width: auto !important; margin: 0 !important; }
+        .logo-text p { color: #40a673 !important; font-size: 1.1em !important; font-weight: bold !important; white-space: nowrap !important; margin: 0 !important; line-height: 1.2 !important; }
+        
+        /* Deixei o menu mais compacto (gap menor) */
+        .nav-links { display: flex !important; gap: 8px !important; align-items: center !important; margin: 0 !important; padding: 0 !important; list-style: none !important; flex-wrap: nowrap !important; }
+        
+        /* Fonte e padding dos links levemente menores */
+        .nav-links a, .nav-links a:visited { color: #ffffff !important; text-decoration: none !important; font-weight: 500 !important; padding: 6px 10px !important; font-size: 0.85em !important; font-family: 'Poppins', sans-serif !important; transition: 0.3s !important; white-space: nowrap !important; }
+        .nav-links a:hover, .nav-links a.active { color: #fff0aa !important; }
+        
+        /* Botões de Gerenciar mais finos */
+        .admin-link a { border: 1px solid #40a673 !important; color: #40a673 !important; border-radius: 20px !important; padding: 4px 10px !important; background: transparent !important; display: flex !important; align-items: center !important; gap: 5px !important; font-size: 0.8em !important; }
+        .admin-link a:hover { background-color: #40a673 !important; color: #ffffff !important; }
+        
+        /* Botões Sair/Entrar mais finos */
+        .btn-login, .btn-logout { border-radius: 20px !important; padding: 5px 15px !important; display: inline-flex !important; align-items: center !important; gap: 5px !important; font-size: 0.85em !important; }
+        .btn-login { background-color: #40a673 !important; color: #ffffff !important; }
+        .btn-login:hover { background-color: #358a60 !important; }
+        .btn-logout { background-color: #d9534f !important; color: #ffffff !important; }
+        .btn-logout:hover { background-color: #c9302c !important; }
+        
+        /* Nome do usuário protegido contra quebra de linha */
+        .user-greeting { color: #fff0aa !important; font-weight: 600 !important; font-size: 0.85em !important; font-family: 'Poppins', sans-serif !important; white-space: nowrap !important; }
+    </style>
+</head>
+<body>
+    {# Cabeçalho do site, presente em todas as páginas #}
+    <header>
+        <div class="container navbar {% block navbar_class %}{% endblock %}">
+            <div class="logo-section">
+                <div class="logo-placeholder">
+                    <img src="{% static 'crud_app/img/logo.svg' %}" alt="LOGOTIPO">
+                </div>
+                <div class="logo-text">
+                    <p>Parauapebas e Região</p>
+                </div>
+            </div>
+            
+            {# Seção de navegação principal #}
+            <nav>
+                <ul class="nav-links">
+                    <li>
+                        <a href="{% url 'index' %}" {% if request.resolver_match.url_name == 'index' %}class="active"{% endif %}>
+                            Início
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'atracoes' %}" {% if request.resolver_match.url_name == 'atracoes' %}class="active"{% endif %}>
+                            Atrações
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'mapa' %}" {% if request.resolver_match.url_name == 'mapa' %}class="active"{% endif %}>
+                            Mapa
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'sobre' %}" {% if request.resolver_match.url_name == 'sobre' %}class="active"{% endif %}>
+                            Sobre
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'contato' %}" {% if request.resolver_match.url_name == 'contato' %}class="active"{% endif %}>
+                            Contato
+                        </a>
+                    </li>
+
+                    {# --- Links Condicionais para Administradores --- #}
+                    {% if user.is_authenticated and user.is_staff %}
+                        <li class="admin-link">
+                            <a href="{% url 'atracoes_admin_index' %}">
+                                <i class="fas fa-list-ul"></i> Gerenciar Atrações
+                            </a>
+                        </li>
+                        <li class="admin-link">
+                            <a href="{% url 'usuarios_index' %}">
+                                <i class="fas fa-users-cog"></i> Gerenciar Usuários
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {# --- Links Condicionais de Autenticação --- #}
+                    {% if user.is_authenticated %}
+                        <li>
+                            <span class="user-greeting">Olá, {{ user.username }}</span>
+                        </li>
+                        <li>
+                            <a href="{% url 'logout' %}" class="btn-logout">
+                                <i class="fas fa-sign-out-alt"></i> Sair
+                            </a>
+                        </li>
+                    {% else %}
+                        <li>
+                            <a href="{% url 'cadastro' %}" {% if request.resolver_match.url_name == 'cadastro' %}class="active"{% endif %}>
+                                <i class="fas fa-user-plus"></i> Cadastro
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'login' %}" class="btn-login">
+                                <i class="fas fa-sign-in-alt"></i> Entrar
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+                
+                {# Botão de menu "hambúrguer" para navegação em dispositivos móveis #}
+                <button class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    {# Seção principal do conteúdo da página #}
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    {# Bloco do rodapé #}
+    {% block footer %}
+        <footer class="{% block footer_class %}{% endblock %}">
+        </footer>
+    {% endblock %}
+
+    {# Link para o arquivo JavaScript principal #}
+    <script src="{% static 'crud_app/script.js' %}"></script>
+    
+    {# Bloco para JavaScript extra #}
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

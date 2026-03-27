@@ -1,0 +1,143 @@
+{# Herda a estrutura base do site a partir do arquivo base.html #}
+{% extends "crud_app/base.html" %}
+{# Carrega as tags de arquivos estáticos para usar CSS, JS e imagens #}
+{% load static %}
+
+{# Define o título que aparecerá na aba do navegador para esta página específica #}
+{% block title %}Sobre - TurMaps{% endblock %}
+
+{# Início do bloco de conteúdo principal que será inserido no template base #}
+{% block content %}
+    {# Cabeçalho padrão da página com título e subtítulo #}
+    <div class="page-header">
+        <div class="container">
+            <h1>Sobre o Projeto</h1>
+            <p>Conheça nossa missão, visão e a equipe por trás do TurMaps</p>
+        </div>
+    </div>
+    
+    {# Container principal para o conteúdo da página "Sobre" #}
+    <main class="main-content">
+        <div class="container">
+            {# Seção que descreve a Missão, Visão e Valores do projeto #}
+            <section class="section">
+                <h2>Missão, Visão e Valores</h2>
+                
+                <h3><i class="fas fa-bullseye"></i> Missão</h3>
+                <p>
+                    Promover o turismo sustentável e consciente na região de Parauapebas, Canaã dos Carajás e Curionópolis, 
+                    facilitando o acesso à informação sobre atrações turísticas, culturais e naturais, e contribuindo para o 
+                    desenvolvimento econômico e social das comunidades locais através da valorização de seus patrimônios.
+                </p>
+
+                <h3><i class="fas fa-eye"></i> Visão</h3>
+                <p>
+                    Ser a principal plataforma digital de referência para turismo na região de Parauapebas e adjacências, 
+                    reconhecida pela qualidade das informações, pela experiência do usuário e pelo compromisso com a 
+                    transparência e a acessibilidade, tornando-se um modelo de serviço público digital eficiente e centrado 
+                    no cidadão.
+                </p>
+
+                <h3><i class="fas fa-hand-holding-heart"></i> Valores</h3>
+                <p>
+                    Inovação, Acessibilidade, Transparência, Sustentabilidade e Compromisso com a valorização da cultura local.
+                </p>
+            </section>
+            
+            {# Linha horizontal para separar as seções #}
+            <hr>
+
+            {# Seção que apresenta a equipe de desenvolvimento do projeto #}
+            <section class="section team-section">
+                <h2>Nossa Equipe de Produção</h2>
+                <p>O TurMaps foi desenvolvido por acadêmicos e profissionais com o objetivo de valorizar o patrimônio turístico da região.</p>
+                {# Grid para organizar os cards de cada membro da equipe #}
+                <div class="team-grid">
+                    
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                        <h4>Eduardo da Silva Souza</h4>
+                        <div class="role">Desenvolvimento Full-Stack</div>
+                        <p>
+                            Responsável pela arquitetura do projeto e atuando em funcionalidades completas do sistema.
+                        </p>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <i class="fas fa-paint-brush"></i> </div>
+                        <h4>Esdras Borges Morais</h4>
+                        <div class="role">Desenvolvimento Front-End</div>
+                        <p>
+                            Foco na construção das interfaces, experiência do usuário (UX/UI) e estilização da plataforma.
+                        </p>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <i class="fas fa-server"></i> </div>
+                        <h4>Guilherme Augusto Da Silva Nascimento</h4>
+                        <div class="role">Desenvolvimento Back-End</div>
+                        <p>
+                            Especializado na modelagem de dados, lógica de servidor, autenticação e integração com o PostgreSQL.
+                        </p>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                        <h4>Samuel Lucas da Conceição Setúbal</h4>
+                        <div class="role">Desenvolvimento Full-Stack</div>
+                        <p>
+                            Contribuição na construção de novas funcionalidades, testes e manutenção da performance do projeto.
+                        </p>
+                    </div>
+                </div>
+
+                {# Subseção para destacar o suporte acadêmico (orientador e coordenador) #}
+                <div class="academic-support" style="margin-top: 50px; text-align: center;">
+                    <h3 style="color: var(--marrom); border-bottom: 2px solid var(--amarelo); padding-bottom: 10px; display: inline-block;">Suporte Acadêmico</h3>
+                    <div style="display: flex; justify-content: center; gap: 40px; margin-top: 20px; flex-wrap: wrap;">
+                        <div style="max-width: 250px; text-align: center;">
+                            <i class="fas fa-chalkboard-teacher" style="font-size: 2em; color: var(--verde); margin-bottom: 10px;"></i>
+                            <h4 style="margin-bottom: 5px;">Prof. Glorisnaldo Rosa dos Santos</h4>
+                            <div class="role" style="font-weight: 600; color: var(--cinza-medio);">ORIENTADOR</div>
+                            <p style="font-size: 0.9em; margin-top: 5px;">
+                                Guia e mentor na concepção e execução técnica do projeto.
+                            </p>
+                        </div>
+                        <div style="max-width: 250px; text-align: center;">
+                            <i class="fas fa-user-graduate" style="font-size: 2em; color: var(--verde); margin-bottom: 10px;"></i>
+                            <h4 style="margin-bottom: 5px;">Antônio Soares</h4>
+                            <div class="role" style="font-weight: 600; color: var(--cinza-medio);">COORDENADOR DO CURSO</div>
+                            <p style="font-size: 0.9em; margin-top: 5px;">
+                                Suporte institucional e alinhamento do projeto com os objetivos do curso.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+{% endblock %}
+
+{# Bloco opcional para adicionar uma classe CSS específica ao rodapé desta página #}
+{% block footer_class %}sobre-footer{% endblock %}
+
+{# Bloco para adicionar JavaScript customizado no final da página #}
+{% block extra_js %}
+    <script>
+        // Adiciona um 'escutador' de eventos que espera o DOM (a estrutura da página) ser completamente carregado.
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verifica se uma função chamada 'setupCadastroForm' existe no escopo global (provavelmente vinda de um arquivo .js externo).
+            // NOTA: Esta função parece ser específica de outra página (cadastro) e pode não ser necessária aqui.
+            if (typeof setupCadastroForm === 'function') {
+                // Se a função existir, ela é executada.
+                setupCadastroForm(); 
+            }
+        });
+    </script>
+{% endblock %}

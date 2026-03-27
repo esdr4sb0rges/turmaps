@@ -1,0 +1,120 @@
+{# Herda a estrutura base do site a partir do arquivo base.html #}
+{% extends "crud_app/base.html" %}
+{# Carrega as tags de arquivos estáticos para usar CSS, JS e imagens #}
+{% load static %}
+
+{# Define o título que aparecerá na aba do navegador para esta página #}
+{% block title %}Atrações - TurMaps{% endblock %}
+
+{# Início do bloco de conteúdo principal que será inserido no template base #}
+{% block content %}
+    {# Cabeçalho padrão da página com título e subtítulo #}
+    <div class="page-header">
+        <div class="container">
+            <h1>Nossas Atrações</h1>
+            <p>Explore os tesouros de Parauapebas e região.</p>
+        </div>
+    </div>
+
+    {# Conteúdo principal da página, onde a lista de atrações e os filtros são exibidos #}
+    <main class="main-content attractions-list-page">
+        <div class="container max-w-1200">
+            {# Container para os controles de filtro (categorias e cidades) #}
+            <div class="filters-container">
+                {# Filtros de categoria, renderizados como botões #}
+                <div class="category-filters">
+                    <div class="category-buttons">
+                        {# Botão padrão para mostrar todas as categorias #}
+                        <button class="filter-btn active" data-filter="all">
+                            <i class="fas fa-globe"></i> Todas
+                        </button>
+                        {# Loop para criar um botão de filtro para cada categoria vinda do contexto da view #}
+                        {% for categoria in categorias %}
+                        <button class="filter-btn" data-filter="{{ categoria.nome|slugify }}">
+                            <i class="{{ categoria.icone|default:'fas fa-star' }}"></i> {{ categoria.nome }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                {# Filtro de cidade, renderizado como um menu dropdown (select) #}
+                <div class="city-filter">
+                    <select id="city-filter-select">
+                        <option value="all">Todas as Cidades</option>
+                        {# Loop para criar uma opção para cada cidade vinda do contexto da view #}
+                        {% for cidade in cidades %}
+                        <option value="{{ cidade.nome|slugify }}">{{ cidade.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            {# Grid onde os cards das atrações serão exibidos #}
+            <div class="attractions-grid" id="attractions-grid">
+                {# Verifica se a lista de 'atracoes' vinda do contexto não está vazia #}
+                {% if atracoes %}
+                    {# Loop para criar um card para cada atração na lista #}
+                    {% for atracao in atracoes %}
+                    {# O card da atração. Os atributos 'data-category' e 'data-city' são usados pelo JavaScript para filtrar a lista. #}
+                    <div class="attraction-card" data-category="{{ atracao.categoria.nome|slugify }}" data-city="{{ atracao.cidade.nome|slugify }}">
+                        <div class="card-image">
+                            {# Verifica se a atração possui uma imagem associada #}
+                            {% if atracao.imagem %}
+                                <img src="{{ atracao.imagem.url }}" alt="{{ atracao.nome }}" loading="lazy">
+                            {% else %}
+                                {# Se não houver imagem, exibe uma imagem placeholder #}
+                                <img src="{% static 'img/placeholder.png' %}" alt="Imagem não disponível" loading="lazy">
+                            {% endif %}
+                            <span class="card-category">{{ atracao.categoria.nome }}</span>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">{{ atracao.nome }}</h3>
+                            <div class="card-city">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ atracao.cidade.nome }}</span>
+                            </div>
+                            {# Exibe uma versão truncada da descrição (primeiras 25 palavras) #}
+                            <p class="card-description">{{ atracao.descricao|truncatewords:25 }}</p>
+                            {# Exibe informações de horário e entrada, com um valor padrão caso não existam #}
+                            <div class="card-schedule">
+                                <strong>Horários:</strong> {{ atracao.horario_funcionamento|default:"Não informado" }}<br>
+                                <strong>Entrada:</strong> {{ atracao.informacoes_entrada|default:"Não informado" }}
+                            </div>
+                            {# Ações do card, como o botão para ver no mapa #}
+                            <div class="card-actions">
+                                <a href="{% url 'mapa' %}?lat={{ atracao.latitude }}&lng={{ atracao.longitude }}" class="map-btn">
+                                    <i class="fas fa-map-marked-alt"></i>
+                                    Ver no Mapa
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {# Bloco executado se a lista de 'atracoes' estiver vazia #}
+                {% else %}
+                    {# Exibe uma mensagem informando que não há atrações cadastradas #}
+                    <div class="no-attractions">
+                        <i class="fas fa-binoculars"></i>
+                        <p>Nenhuma atração foi cadastrada ainda.</p>
+                        <p style="font-size: 0.9em; color: var(--cinza-medio);">Volte em breve para novidades!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{# Adiciona uma classe CSS específica ao rodapé apenas nesta página #}
+{% block footer_class %}atracoes-footer{% endblock %}
+
+{# Bloco para adicionar JavaScript customizado no final da página #}
+{% block extra_js %}
+    <script>
+        // Adiciona um 'escutador' de eventos que espera o DOM (a estrutura da página) ser completamente carregado.
+        document.addEventListener('DOMContentLoaded', function() {
+            // Chama uma função global chamada 'setupCadastroForm', provavelmente definida em um arquivo .js externo.
+            // NOTA: O nome da função ('setupCadastroForm') sugere que ela pode ser de outra página.
+            // Uma função mais apropriada aqui seria algo como 'setupAttractionFilters()'.
+            setupCadastroForm(); 
+        });
+    </script>
+{% endblock %}
